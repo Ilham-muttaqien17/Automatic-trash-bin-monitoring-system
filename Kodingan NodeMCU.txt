@@ -1,0 +1,80 @@
+#define BLYNK_PRINT Serial
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+
+//variabel koneksi ke blynk
+char auth[] = "yAPeMxCVhZ-nhtCfzNe0KmTIdAlxFb1q";
+char ssid[] = "MyWifi";
+char pass[] = "mypassword123";
+
+BlynkTimer timer;
+
+String sdata;
+String myString;
+char rdata;
+
+void myTimerEvent()
+{
+  Blynk.virtualWrite(V1, millis()/1000);
+}
+
+
+void setup(){
+  Serial.begin(9600);
+
+  Serial.println("Connecting to ");
+       Serial.println(ssid); 
+ 
+       WiFi.begin(ssid, pass); 
+       while (WiFi.status() != WL_CONNECTED) 
+          {
+            delay(500);
+            Serial.print(".");
+          }
+      Serial.println("");
+      Serial.println("WiFi connected");
+
+  //koneksi ke blynk
+  Blynk.begin(auth, ssid, pass, "blynk-cloud.com", 8080);
+  timer.setInterval(1000L, sensorvalue);
+
+} 
+
+void loop(){
+
+  if(Serial.available() == 0)
+  {
+    Blynk.run();
+    timer.run();
+      
+  }
+
+  if(Serial.available() > 0)
+  {
+    rdata = Serial.read();
+    myString = myString+rdata;
+  }
+  /*String data = "";
+  
+  while(Serial.available() > 0){
+      data  += char(Serial.read());
+    
+    }
+   data.trim();
+   Serial.println(data);
+
+   //kirim data ke blynk
+   Blynk.virtualWrite(V12, data);
+   Blynk.run();
+   delay(1000);*/
+
+}
+
+void sensorvalue()
+{
+  sdata = myString;
+
+  Blynk.virtualWrite(V12, sdata);
+  myString = "";
+}
+  

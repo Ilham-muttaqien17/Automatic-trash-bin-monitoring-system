@@ -1,0 +1,179 @@
+#include <Servo.h>
+
+/* Ping))) Sensor
+
+   This sketch reads a PING))) ultrasonic rangefinder and returns the
+   distance to the closest object in range. To do this, it sends a pulse
+   to the sensor to initiate a reading, then listens for a pulse
+   to return.  The length of the returning pulse is proportional to
+   the distance of the object from the sensor.
+
+   The circuit:
+    * +V connection of the PING))) attached to +5V
+    * GND connection of the PING))) attached to ground
+    * SIG connection of the PING))) attached to digital pin 7
+
+   http://www.arduino.cc/en/Tutorial/Ping
+
+   created 3 Nov 2008
+   by David A. Mellis
+   modified 30 Aug 2011
+   by Tom Igoe
+
+   This example code is in the public domain.
+
+ */
+
+// this constant won't change.  It's the pin number
+// of the sensor's output:
+const int pinEcho1 = 11;
+const int pinTrigger1 = 10;
+const int pinEcho2 = 9;
+const int pinTrigger2 = 8;
+
+const int pinservo = 12;
+
+const int tinggi_tmpsampah = 24;
+int tinggi_sampah = 0;
+float persentase_sampah;
+
+Servo myservo;
+
+void setup() {
+  // initialize serial communication:
+  myservo.attach(pinservo);
+  Serial.begin(9600);
+
+  pinMode(13, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(6, OUTPUT);
+  pinMode(7, OUTPUT);
+}
+
+void loop() {
+  
+  jarak();
+  kapasitas();
+  // establish variables for duration of the ping,
+  // and the distance result in inches and centimeters:
+    
+}
+
+void jarak(){
+  
+  long duration1, distance1;
+
+  // The PING))) is triggered by a HIGH pulse of 2 or more microseconds.
+  // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
+  pinMode(pinTrigger1, OUTPUT);
+ 
+  digitalWrite(pinTrigger1, LOW);
+  delayMicroseconds(2);
+  digitalWrite(pinTrigger1, HIGH);
+  delayMicroseconds(5);
+  digitalWrite(pinTrigger1, LOW);
+
+
+  // The same pin is used to read the signal from the PING))): a HIGH
+  // pulse whose duration is the time (in microseconds) from the sending
+  // of the ping to the reception of its echo off of an object.
+  pinMode(pinEcho1, INPUT);
+  
+  duration1 = pulseIn(pinEcho1, HIGH);
+
+
+  // convert the time into a distance
+  distance1 = microsecondsToCentimeters(duration1);
+
+
+  // Print the distance
+  Serial.print("Distance: ");
+  Serial.print(distance1);
+  Serial.print("cm");
+  Serial.println();
+
+
+  // Turn on the LED if the object is too close:
+  if(distance1 <= 30) {
+    //digitalWrite(ledPin, HIGH);
+       myservo.write(90);
+       delay(1);
+       myservo.write(180);
+  
+    
+  } else {
+    //digitalWrite(ledPin, LOW);
+    myservo.write(0);
+    
+  }
+  
+}
+
+void kapasitas(){
+  
+  long duration, distance;
+  
+  pinMode(pinTrigger2, OUTPUT);
+ 
+  digitalWrite(pinTrigger2, LOW);
+  delayMicroseconds(2);
+  digitalWrite(pinTrigger2, HIGH);
+  delayMicroseconds(5);
+  digitalWrite(pinTrigger2, LOW);
+  
+  pinMode(pinEcho2, INPUT);
+  
+  duration = pulseIn(pinEcho2, HIGH);
+  
+  distance = microsecondsToCentimeters(duration);
+
+  tinggi_sampah = tinggi_tmpsampah-distance;
+  persentase_sampah = tinggi_sampah * 4;
+  
+  /*Serial.print("Tinggi sampah : ");
+  Serial.print(distance);
+  Serial.println(" cm");
+  delay(1000);*/
+  
+  if(tinggi_sampah >= 19){
+    Serial.print("Kapasitas : ");
+    Serial.print(persentase_sampah);
+    Serial.println(" %");
+    Serial.print("Tinggi sampah: ");
+    Serial.print(tinggi_sampah);
+    Serial.println(" cm");
+    Serial.println();
+
+    delay(1000);
+    
+  } else if(tinggi_sampah >= 10 && tinggi_sampah < 19){
+    Serial.print("Kapasitas : ");
+    Serial.print(persentase_sampah);
+    Serial.println(" %");
+    Serial.print("Tinggi sampah: ");
+    Serial.print(tinggi_sampah);
+    Serial.println(" cm");
+    Serial.println();
+
+    delay(1000);
+    
+  } else if(tinggi_sampah < 10){
+    Serial.print("Kapasitas : ");
+    Serial.print(persentase_sampah);
+    Serial.println(" %");
+    Serial.print("Tinggi sampah: ");
+    Serial.print(tinggi_sampah);
+    Serial.println(" cm");
+    Serial.println();
+
+    delay(1000);
+  }
+}
+
+
+long microsecondsToCentimeters(long microseconds) {
+  // The speed of sound is 340 m/s or 29 microseconds per centimeter.
+  // The ping travels out and back, so to find the distance of the
+  // object we take half of the distance travelled.
+  return microseconds / 29 / 2;
+}
